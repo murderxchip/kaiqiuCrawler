@@ -24,6 +24,6 @@ func CheckResExists(url string) bool {
 	// fmt.Println(res.StatusCode)
 }
 
-func p(v interface{}){
-	fmt.Println(v)
+func P(v interface{}){
+	fmt.Printf("[debug print] %v \n", v)
 }

@@ -1,15 +1,14 @@
 package kqcrawler
 
 import (
-	"fmt"
 	"log"
+	"fmt"
 	"strings"
 	"regexp"
 	"strconv"
-
+	nu "net/url"
 	"github.com/PuerkitoBio/goquery"
 )
-
 
 type PlayerScore struct {
 	mname string
@@ -24,18 +23,47 @@ type PlayerScore struct {
 	mtype uint8 //0 业余 1 专业 
 }
 
-type PlayerScores map[int]PlayerScore
+// func (p PlayerScore) func getPlayerScore() {
+// 	return 
+// }
 
-// var pfs = PlayerScores{}
+const (
+	SCORES_URL = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
+)
 
-func Scores() PlayerScores {
-	url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
+type PlayerScores struct {
+	scores map[int]PlayerScore
+}
+
+func NewPlayerScores() *PlayerScores{
+	ps := &PlayerScores{scores: make(map[int]PlayerScore) }
+	return ps
+}
+
+func (ps *PlayerScores) GetScores() map[int]PlayerScore {
+	return ps.scores
+	// return map[int]PlayerScore{}
+}
+
+func (ps *PlayerScores) GetScore(spaceid int) PlayerScore {
+	return ps.scores[spaceid]
+}
+
+func (ps *PlayerScores) SetScore(spaceid int, score PlayerScore) {
+	ps.scores[spaceid] = score
+}
+
+func (ps *PlayerScores) ExecFind(kw string) {
+	P("exec find: " + kw)
+	url := fmt.Sprintf(SCORES_URL, nu.QueryEscape(kw))
+	P(url)
+	// url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	pfs := PlayerScores{}
+	//*
+	// pfs := PlayerScores{}
 
 	doc.Find(".scoretab tr").Each(func(i int, s *goquery.Selection) {
 		
@@ -56,17 +84,16 @@ func Scores() PlayerScores {
 	        panic(err)
 	    }
 
-		p(spaceid)
+		P(spaceid)
 
-		pfs[spaceid] = pf
+		// pfs[spaceid] = pf
 
 		// fmt.Printf("%v\n", pf.mname)
 
 		// PlayerFinds[]
 	})
 
-	fmt.Printf("%v\n", pfs)
+	// fmt.Printf("%v\n", pfs)
 
-	return pfs
-	
+	//*/
 }
