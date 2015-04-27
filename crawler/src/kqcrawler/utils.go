@@ -28,7 +28,7 @@ func GetRealAvatar(url string) string {
 	if CheckResExists(url) {
 		return url
 	}
-	return "http://116.255.247.74/ucenter/images/noavatar_big.gif";
+	return "http://116.255.247.74/ucenter/images/noavatar_big.gif"
 }
 
 func P(v ...interface{}){

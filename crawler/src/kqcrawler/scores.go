@@ -31,6 +31,10 @@ type PlayerScore struct {
 	matched bool //是否完全匹配比赛用名
 }
 
+func NewPlayerScore() PlayerScore{
+	return PlayerScore{0,"","http://116.255.247.74/ucenter/images/noavatar_big.gif",0,"","","",0,"",0,0,0,0,false}
+}
+
 // func (p PlayerScore) func getPlayerScore() {
 // 	return 
 // }
@@ -115,7 +119,8 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 
 	    pf, ok := ps.GetScore(spaceid)
 	    if !ok {
-	    	pf = PlayerScore{}	
+	    	// pf = PlayerScore{}	
+	    	pf = NewPlayerScore()	
 	    }
 		
 
@@ -127,6 +132,7 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 	    pf.spaceid = spaceid
 		P(spaceid)
 
+		pf.siteorder, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(1).Text()))
 		pf.sex = strings.TrimSpace(s.Find("td").Eq(3).Text())
 		pf.region = strings.TrimSpace(s.Find("td").Eq(4).Text())
 		pf.name = strings.TrimSpace(s.Find("td").Eq(5).Text())
