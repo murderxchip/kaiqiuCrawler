@@ -86,7 +86,7 @@ func main() {
 	//*
 	
 	//*/
-	kw := "zball"
+	kw := "李"
 
 	scores := kq.NewPlayerScores()
 	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
@@ -102,8 +102,8 @@ func main() {
 
 	ms := kq.NewPlayerScoreSorter(scores1)
     sort.Sort(ms)
-                 
-    kq.P(ms)
+    ms1 := ms[0:9]
+    kq.P(ms1)
     // for _, item := range ms {
     //     kq.P(item)
     // }
