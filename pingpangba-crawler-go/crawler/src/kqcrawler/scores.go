@@ -1,13 +1,14 @@
 package kqcrawler
 
 import (
-	"log"
+	// "log"
 	"fmt"
 	"strings"
 	"regexp"
 	"strconv"
 	"net/url"
 	"sync"
+	// "sort"
 	"github.com/PuerkitoBio/goquery"
 	// "errors"
 )
@@ -25,6 +26,7 @@ type PlayerScore struct {
 	score_high int //历史最高
 	score_mirror int
 	mtype uint8 //0 业余 1 专业 
+	matched bool //是否完全匹配比赛用名
 }
 
 // func (p PlayerScore) func getPlayerScore() {
@@ -50,8 +52,12 @@ func NewPlayerScores() *PlayerScores{
 	return ps
 }
 
-func (ps *PlayerScores) GetScores() (map[int]PlayerScore, int) {
-	return ps.scores, len(ps.scores)
+func (ps *PlayerScores) Count() int {
+	return len(ps.scores);
+}
+
+func (ps *PlayerScores) GetScores() (map[int]PlayerScore) {
+	return ps.scores
 }
 
 func (ps *PlayerScores) GetScore(spaceid int) (p PlayerScore, ok bool){
@@ -70,9 +76,17 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 	url := fmt.Sprintf(SCORES_URL, url.QueryEscape(kw), ver, etype)
 	P(url)
 	// url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
+	c := 0
+	GOQUERYSTART:
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		log.Fatal(err)
+		if c < 3 {
+			c++
+			goto GOQUERYSTART
+		}
+		
+		return
+		// log.Fatal("goquery error:" , err)
 	}
 	//*
 	// pfs := PlayerScores{}
@@ -83,18 +97,33 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 			return
 		}
 
-		pf := PlayerScore{}
 
-		pf.mname = strings.TrimSpace(s.Find("td").Eq(2).Text())
+
+
 		mname_raw,_ := s.Find("td").Eq(2).Html()
+
+
 		reg := regexp.MustCompile(`space\-(\d+)\.html`)
 
 		spaceida := reg.FindAllStringSubmatch(mname_raw, -1)
 		spaceid, err := strconv.Atoi(spaceida[0][1])
 
 		if err != nil {
-	        panic(err)
+	        // panic(err)
+	        return
 	    }
+
+	    pf, ok := ps.GetScore(spaceid)
+	    if !ok {
+	    	pf = PlayerScore{}	
+	    }
+		
+
+	    pf.mname = strings.TrimSpace(s.Find("td").Eq(2).Text())
+		if pf.mname == kw {
+			pf.matched = true
+		}
+
 	    pf.spaceid = spaceid
 		P(spaceid)
 
@@ -126,4 +155,33 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 	// fmt.Printf("%v\n", pfs)
 
 	//*/
+}
+
+
+//****** map sorter
+type PlayerScoreSorter []PlayerScore
+
+func NewPlayerScoreSorter(m map[int]PlayerScore) PlayerScoreSorter {
+	ms := make(PlayerScoreSorter, 0, len(m))
+	for _, v := range m {
+		ms = append(ms, v)
+	}
+
+	return ms
+}
+
+func (ms PlayerScoreSorter) Len() int {
+	return len(ms)
+}
+
+func (ms PlayerScoreSorter) Less(i, j int) bool {
+	if ms[i].matched {
+		return true
+	}
+
+	return ms[i].score > ms[j].score
+}
+
+func (ms PlayerScoreSorter) Swap(i, j int) {
+	ms[i], ms[j] = ms[j], ms[i]
 }

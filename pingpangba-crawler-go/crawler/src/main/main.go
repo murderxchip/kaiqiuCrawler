@@ -4,8 +4,9 @@ import (
 	// "fmt"
 	// "log"
 	// 
-	"sync"
-	"os"
+	// "sync"
+	// "os"
+"sort"
 	kq "../kqcrawler"
 )
 
@@ -23,10 +24,12 @@ func main() {
 	// fmt.Println(r);
 	// kq.P("test")
 
+/*
 	wg := sync.WaitGroup{}
 	ch := make(chan map[int]kq.PlayerScore, 4)
 
-	kw := "秦明"
+	// kw := "黑杰克"
+	kw := "秦"
 
 	Finder := func(kw, ver, etype string) {
 		defer wg.Done()
@@ -45,18 +48,33 @@ func main() {
 	go Finder(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
 	wg.Wait()
 
+	// kq.P(<-ch)
 
+
+	for i := 0;i<4;i++{
+		m := <-ch //map[int]PlayerScore
+		kq.P("m length:", len(m))
+
+
+	}
+
+	scores_merge := make(map[int]PlayerScore)
+
+	for {
+		select {
+
+		}
+	}
 //*
 	for v := range ch {
 		kq.P(v)
-
 
 
 	}
 
 //*/
 
-	os.Exit(0)
+	// os.Exit(0)
 	/*
 	scores := kq.NewPlayerScores()
 	scores.ExecFindList("秦明", kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
@@ -68,4 +86,26 @@ func main() {
 	//*
 	
 	//*/
+	kw := "zball"
+
+	scores := kq.NewPlayerScores()
+	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
+	if scores.Count() > 0 {
+		scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)	
+	}
+	
+	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
+	scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
+
+	kq.P(scores.Count())
+	scores1 := scores.GetScores()
+
+	ms := kq.NewPlayerScoreSorter(scores1)
+    sort.Sort(ms)
+                 
+    kq.P(ms)
+    // for _, item := range ms {
+    //     kq.P(item)
+    // }
+
 }
