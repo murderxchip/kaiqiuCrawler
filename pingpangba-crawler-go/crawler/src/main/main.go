@@ -103,6 +103,8 @@ func main() {
 	ms := kq.NewPlayerScoreSorter(scores1)
     sort.Sort(ms)
     ms1 := ms[0:9]
+
+    //todo get avatar
     kq.P(ms1)
     // for _, item := range ms {
     //     kq.P(item)
