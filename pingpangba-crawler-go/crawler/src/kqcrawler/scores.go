@@ -6,20 +6,24 @@ import (
 	"strings"
 	"regexp"
 	"strconv"
-	nu "net/url"
+	"net/url"
+	"sync"
 	"github.com/PuerkitoBio/goquery"
+	// "errors"
 )
 
 type PlayerScore struct {
+	spaceid int
 	mname string
-	siteorder uint32
-	sex uint8
+	siteorder int
+	sex string
 	region string
 	name string
-	score uint16
+	score int
 	level string
-	score_year uint16
-	score_high uint16
+	score_year int
+	score_high int //历史最高
+	score_mirror int
 	mtype uint8 //0 业余 1 专业 
 }
 
@@ -28,34 +32,42 @@ type PlayerScore struct {
 // }
 
 const (
-	SCORES_URL = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
+	SCORES_URL = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
+
+	F_EVENTTYPE_PLAYER 	= "0" //业余
+    F_EVENTTYPE_PRO 	= "1" //专业
+    F_VERSION_NOW 		= "now" //即时
+    F_VERSION_V1 		= "v1" //镜像
 )
 
 type PlayerScores struct {
 	scores map[int]PlayerScore
+	mux *sync.Mutex
 }
 
 func NewPlayerScores() *PlayerScores{
-	ps := &PlayerScores{scores: make(map[int]PlayerScore) }
+	ps := &PlayerScores{scores: make(map[int]PlayerScore), mux: &sync.Mutex{} }
 	return ps
 }
 
-func (ps *PlayerScores) GetScores() map[int]PlayerScore {
-	return ps.scores
-	// return map[int]PlayerScore{}
+func (ps *PlayerScores) GetScores() (map[int]PlayerScore, int) {
+	return ps.scores, len(ps.scores)
 }
 
-func (ps *PlayerScores) GetScore(spaceid int) PlayerScore {
-	return ps.scores[spaceid]
+func (ps *PlayerScores) GetScore(spaceid int) (p PlayerScore, ok bool){
+	p, ok = ps.scores[spaceid]
+	return
 }
 
 func (ps *PlayerScores) SetScore(spaceid int, score PlayerScore) {
+	// ps.mux.Lock()
+	// defer ps.mux.Unlock()
 	ps.scores[spaceid] = score
 }
 
-func (ps *PlayerScores) ExecFind(kw string) {
-	P("exec find: " + kw)
-	url := fmt.Sprintf(SCORES_URL, nu.QueryEscape(kw))
+func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
+	P("exec find: ", kw, ver,etype)
+	url := fmt.Sprintf(SCORES_URL, url.QueryEscape(kw), ver, etype)
 	P(url)
 	// url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
 	doc, err := goquery.NewDocument(url)
@@ -83,16 +95,34 @@ func (ps *PlayerScores) ExecFind(kw string) {
 		if err != nil {
 	        panic(err)
 	    }
-
+	    pf.spaceid = spaceid
 		P(spaceid)
+
+		pf.sex = strings.TrimSpace(s.Find("td").Eq(3).Text())
+		pf.region = strings.TrimSpace(s.Find("td").Eq(4).Text())
+		pf.name = strings.TrimSpace(s.Find("td").Eq(5).Text())
+		pf.level = strings.TrimSpace(s.Find("td").Eq(7).Text())
+
+		switch ver {
+		case F_VERSION_V1:
+			pf.score_mirror,_ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(6).Text()))
+			pf.score_year,_ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(8).Text()))
+		case F_VERSION_NOW:
+			pf.score,_ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(6).Text()))
+			pf.score_high, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(8).Text()))
+		}
+
+		ps.SetScore(spaceid, pf)
+		// ps.scores[spaceid] = pf
 
 		// pfs[spaceid] = pf
 
-		// fmt.Printf("%v\n", pf.mname)
+		fmt.Printf("%v\n", pf)
 
 		// PlayerFinds[]
 	})
-
+	
+	P("find over ",ver,etype);
 	// fmt.Printf("%v\n", pfs)
 
 	//*/
