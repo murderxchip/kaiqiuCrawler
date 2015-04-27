@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"net/url"
 	"sync"
+	"time"
 	// "sort"
 	"github.com/PuerkitoBio/goquery"
 	// "errors"
@@ -16,6 +17,7 @@ import (
 type PlayerScore struct {
 	spaceid int
 	mname string
+	avatar string
 	siteorder int
 	sex string
 	region string
@@ -81,6 +83,7 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		if c < 3 {
+			time.Sleep(time.Millisecond*100)
 			c++
 			goto GOQUERYSTART
 		}
@@ -96,9 +99,6 @@ func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 		if i == 0 {
 			return
 		}
-
-
-
 
 		mname_raw,_ := s.Find("td").Eq(2).Html()
 
