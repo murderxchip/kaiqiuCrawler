@@ -24,6 +24,13 @@ func CheckResExists(url string) bool {
 	// fmt.Println(res.StatusCode)
 }
 
-func P(v interface{}){
+func GetRealAvatar(url string) string {
+	if CheckResExists(url) {
+		return url
+	}
+	return "http://116.255.247.74/ucenter/images/noavatar_big.gif";
+}
+
+func P(v ...interface{}){
 	fmt.Printf("[debug print] %v \n", v)
 }
