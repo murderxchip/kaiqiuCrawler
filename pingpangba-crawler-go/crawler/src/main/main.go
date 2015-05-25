@@ -3,19 +3,15 @@ package main
 import (
 	// "fmt"
 	// "log"
-	// 
+	//
 	// "sync"
 	// "os"
-"sort"
 	kq "../kqcrawler"
+	"sort"
 )
 
-
-
-
-
-
 // var PlayerFinds = make(map[uint16]PlayerScore{})
+var ms1 []kq.PlayerScore
 
 func main() {
 	// url := `http://116.255.247.74/ucenter/data/avatar/000/03/84/98_avatar_big.jpg`
@@ -24,76 +20,76 @@ func main() {
 	// fmt.Println(r);
 	// kq.P("test")
 
-/*
-	wg := sync.WaitGroup{}
-	ch := make(chan map[int]kq.PlayerScore, 4)
+	/*
+	   	wg := sync.WaitGroup{}
+	   	ch := make(chan map[int]kq.PlayerScore, 4)
 
-	// kw := "黑杰克"
-	kw := "秦"
+	   	// kw := "黑杰克"
+	   	kw := "秦"
 
-	Finder := func(kw, ver, etype string) {
-		defer wg.Done()
-		scores := kq.NewPlayerScores()
-		scores.ExecFindList(kw, ver, etype)
-		kq.P("get scores ",ver,etype)
-		v, _ := scores.GetScores()
-		ch <- v
-		kq.P("get scores finished ",ver,etype)
-	}
+	   	Finder := func(kw, ver, etype string) {
+	   		defer wg.Done()
+	   		scores := kq.NewPlayerScores()
+	   		scores.ExecFindList(kw, ver, etype)
+	   		kq.P("get scores ",ver,etype)
+	   		v, _ := scores.GetScores()
+	   		ch <- v
+	   		kq.P("get scores finished ",ver,etype)
+	   	}
 
-	wg.Add(4)
-	go Finder(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
-	go Finder(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)
-	go Finder(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
-	go Finder(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
-	wg.Wait()
+	   	wg.Add(4)
+	   	go Finder(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
+	   	go Finder(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)
+	   	go Finder(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
+	   	go Finder(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
+	   	wg.Wait()
 
-	// kq.P(<-ch)
-
-
-	for i := 0;i<4;i++{
-		m := <-ch //map[int]PlayerScore
-		kq.P("m length:", len(m))
+	   	// kq.P(<-ch)
 
 
-	}
-
-	scores_merge := make(map[int]PlayerScore)
-
-	for {
-		select {
-
-		}
-	}
-//*
-	for v := range ch {
-		kq.P(v)
+	   	for i := 0;i<4;i++{
+	   		m := <-ch //map[int]PlayerScore
+	   		kq.P("m length:", len(m))
 
 
-	}
+	   	}
 
-//*/
+	   	scores_merge := make(map[int]PlayerScore)
+
+	   	for {
+	   		select {
+
+	   		}
+	   	}
+	   //*
+	   	for v := range ch {
+	   		kq.P(v)
+
+
+	   	}
+
+	   //*/
 
 	// os.Exit(0)
 	/*
-	scores := kq.NewPlayerScores()
-	scores.ExecFindList("秦明", kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
-	kq.P("get scores")
-	kq.P(scores.GetScores())
-	//*/
+		scores := kq.NewPlayerScores()
+		scores.ExecFindList("秦明", kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
+		kq.P("get scores")
+		kq.P(scores.GetScores())
+		//*/
 	// fmt.Println(scores.GetScores())
 
 	//*
-	
+
 	//*/
-	kw := "李"
+	kw := "黑杰克"
 
 	scores := kq.NewPlayerScores()
 	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
 	if scores.Count() > 0 {
-		scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)	
+		scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)
 	}
-	
+
 	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
 	scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
 
@@ -101,13 +97,19 @@ func main() {
 	scores1 := scores.GetScores()
 
 	ms := kq.NewPlayerScoreSorter(scores1)
-    sort.Sort(ms)
-    ms1 := ms[0:9]
+	sort.Sort(ms)
 
-    //todo get avatar
-    kq.P(ms1)
-    // for _, item := range ms {
-    //     kq.P(item)
-    // }
+	if len(ms) > 8 {
+		ms1 = ms[0:9]
+	} else {
+		ms1 = ms
+	}
+	// ms1 := ms[0:9]
+
+	//todo get avatar
+	kq.P(ms1)
+	// for _, item := range ms {
+	//     kq.P(item)
+	// }
 
 }
