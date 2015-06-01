@@ -14,6 +14,19 @@ import (
 	// "errors"
 )
 
+
+const (
+	URL_SCORES = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
+	URL_SPACE  = "http://kaiqiu.cc/home/%d"
+	URL_HONORS = "http://kaiqiu.cc/home/space.php?do=honor&username=%s"
+	URL_DEFAULT_AVATAR = "http://116.255.247.74/ucenter/images/noavatar_big.gif"
+
+	F_EVENTTYPE_PLAYER = "0"   //业余
+	F_EVENTTYPE_PRO    = "1"   //专业
+	F_VERSION_NOW      = "now" //即时
+	F_VERSION_V1       = "v1"  //镜像
+)
+
 type PlayerScore struct {
 	Spaceid      int
 	Mname        string
@@ -37,22 +50,12 @@ type SpaceInfo struct {
 }
 
 func NewPlayerScore() PlayerScore {
-	return PlayerScore{0, "", "http://116.255.247.74/ucenter/images/noavatar_big.gif", 0, "", "", "", 0, "", 0, 0, 0, 0, false}
+	return PlayerScore{0, "",URL_DEFAULT_AVATAR, 0, "", "", "", 0, "", 0, 0, 0, 0, false}
 }
 
 // func (p PlayerScore) func getPlayerScore() {
 // 	return
 // }
-
-const (
-	URL_SCORES = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
-	URL_SPACE  = "http://kaiqiu.cc/home/%d"
-
-	F_EVENTTYPE_PLAYER = "0"   //业余
-	F_EVENTTYPE_PRO    = "1"   //专业
-	F_VERSION_NOW      = "now" //即时
-	F_VERSION_V1       = "v1"  //镜像
-)
 
 type PlayerScores struct {
 	scores map[int]PlayerScore
@@ -184,17 +187,66 @@ GOQUERYSTART:
 		// log.Fatal("goquery error:" , err)
 	}
 
-	avatar, exists := doc.Find("#space_avatar img").Eq(0).Attr("src")
+	s = SpaceInfo{Avatar: URL_DEFAULT_AVATAR, Cardno: ""}
+
+	avatar, exists := doc.Find("#space_avatar img").First().Attr("src")
 	if exists == false {
 		P("not exist")
-		avatar, exists = doc.Find("td.image").Eq(0).Attr("src")
+		avatar, exists = doc.Find("td.image img").First().Attr("src")
 		if exists == false {
 			P("not exist")
+			return
 		}
 	}
 
-	P(avatar)
-	s = SpaceInfo{Avatar: avatar, Cardno: ""}
+	// P(avatar)
+	s.Avatar = avatar
 
 	return s
+}
+
+/**
+ $title = pq($row)->find('td:eq(0)')->text();
+            $title_h = pq($row)->find('td:eq(1) img')->attr('title');
+
+            if($title && $title_h){
+                $honors[] = $title.'['.$title_h.']';
+            }else{
+                break;
+            }
+
+            */
+func (this *PlayerScores) GetHonors(mname string) (honors []string){
+	url := fmt.Sprintf(URL_HONORS, url.QueryEscape(mname))
+
+c := 0
+	GOQUERYSTART:
+	doc, err := goquery.NewDocument(url)
+	if err != nil {
+		if c < 3 {
+			time.Sleep(time.Millisecond * 100)
+			c++
+			goto GOQUERYSTART
+		}
+
+		return
+		// log.Fatal("goquery error:" , err)
+	}
+
+	honors = []string{}
+
+	doc.Find("table.spacegame tr").Each(func(i int, s *goquery.Selection) {
+
+		title := s.Find("td").Eq(0).Text()
+		title_h, exists := s.Find("img").Eq(0).Attr("title")
+		if exists == false {
+			return
+		}
+
+		P(title, title_h)
+
+		honors = append(honors, fmt.Sprintf("%s[%s]", title, title_h))
+	})
+
+return
 }

@@ -131,10 +131,19 @@ func main() {
 
 	//11328 6896
 	scores := kq.NewPlayerScores()
-	var spaceinfo kq.SpaceInfo
-	spaceinfo = scores.GetSpaceInfo(11328)
+	// var spaceinfo kq.SpaceInfo
+	// spaceinfo = scores.GetSpaceInfo(11328)
 
-	kq.P(spaceinfo)
+
+	// fmt.Println(spaceinfo.Avatar)
+
+	scores.GetHonors("创意")
+
+	//*/
+
+	//*
+
+
 	//*/
 
 }
