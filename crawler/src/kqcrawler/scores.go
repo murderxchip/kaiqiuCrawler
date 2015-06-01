@@ -15,20 +15,25 @@ import (
 )
 
 type PlayerScore struct {
-	spaceid      int
-	mname        string
-	avatar       string
-	siteorder    int
-	sex          string
-	region       string
-	name         string
-	score        int
-	level        string
-	score_year   int
-	score_high   int //历史最高
-	score_mirror int
-	mtype        uint8 //0 业余 1 专业
-	matched      bool  //是否完全匹配比赛用名
+	Spaceid      int
+	Mname        string
+	Avatar       string
+	Siteorder    int
+	Sex          string
+	Region       string
+	Name         string
+	Score        int
+	Level        string
+	Score_year   int
+	Score_high   int //历史最高
+	Score_mirror int
+	Mtype        uint8 //0 业余 1 专业
+	Matched      bool  //是否完全匹配比赛用名
+}
+
+type SpaceInfo struct {
+	Avatar string
+	Cardno string
 }
 
 func NewPlayerScore() PlayerScore {
@@ -40,7 +45,8 @@ func NewPlayerScore() PlayerScore {
 // }
 
 const (
-	SCORES_URL = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
+	URL_SCORES = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
+	URL_SPACE  = "http://kaiqiu.cc/home/%d"
 
 	F_EVENTTYPE_PLAYER = "0"   //业余
 	F_EVENTTYPE_PRO    = "1"   //专业
@@ -78,7 +84,7 @@ func (ps *PlayerScores) SetScore(spaceid int, score PlayerScore) {
 
 func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
 	P("exec find: ", kw, ver, etype)
-	url := fmt.Sprintf(SCORES_URL, url.QueryEscape(kw), ver, etype)
+	url := fmt.Sprintf(URL_SCORES, url.QueryEscape(kw), ver, etype)
 	P(url)
 	// url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
 	c := 0
@@ -121,27 +127,27 @@ GOQUERYSTART:
 			pf = NewPlayerScore()
 		}
 
-		pf.mname = strings.TrimSpace(s.Find("td").Eq(2).Text())
-		if pf.mname == kw {
-			pf.matched = true
+		pf.Mname = strings.TrimSpace(s.Find("td").Eq(2).Text())
+		if pf.Mname == kw {
+			pf.Matched = true
 		}
 
-		pf.spaceid = spaceid
+		pf.Spaceid = spaceid
 		P(spaceid)
 
-		pf.siteorder, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(1).Text()))
-		pf.sex = strings.TrimSpace(s.Find("td").Eq(3).Text())
-		pf.region = strings.TrimSpace(s.Find("td").Eq(4).Text())
-		pf.name = strings.TrimSpace(s.Find("td").Eq(5).Text())
-		pf.level = strings.TrimSpace(s.Find("td").Eq(7).Text())
+		pf.Siteorder, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(1).Text()))
+		pf.Sex = strings.TrimSpace(s.Find("td").Eq(3).Text())
+		pf.Region = strings.TrimSpace(s.Find("td").Eq(4).Text())
+		pf.Name = strings.TrimSpace(s.Find("td").Eq(5).Text())
+		pf.Level = strings.TrimSpace(s.Find("td").Eq(7).Text())
 
 		switch ver {
 		case F_VERSION_V1:
-			pf.score_mirror, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(6).Text()))
-			pf.score_year, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(8).Text()))
+			pf.Score_mirror, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(6).Text()))
+			pf.Score_year, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(8).Text()))
 		case F_VERSION_NOW:
-			pf.score, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(6).Text()))
-			pf.score_high, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(8).Text()))
+			pf.Score, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(6).Text()))
+			pf.Score_high, _ = strconv.Atoi(strings.TrimSpace(s.Find("td").Eq(8).Text()))
 		}
 
 		ps.SetScore(spaceid, pf)
@@ -160,30 +166,35 @@ GOQUERYSTART:
 	//*/
 }
 
-//****** map sorter
-type PlayerScoreSorter []PlayerScore
+func (this *PlayerScores) GetSpaceInfo(spaceid int) (s SpaceInfo) {
+	url := fmt.Sprintf(URL_SPACE, spaceid)
+	P("get spaceinfo", url)
+	// url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
+	c := 0
+GOQUERYSTART:
+	doc, err := goquery.NewDocument(url)
+	if err != nil {
+		if c < 3 {
+			time.Sleep(time.Millisecond * 100)
+			c++
+			goto GOQUERYSTART
+		}
 
-func NewPlayerScoreSorter(m map[int]PlayerScore) PlayerScoreSorter {
-	ms := make(PlayerScoreSorter, 0, len(m))
-	for _, v := range m {
-		ms = append(ms, v)
+		return
+		// log.Fatal("goquery error:" , err)
 	}
 
-	return ms
-}
-
-func (ms PlayerScoreSorter) Len() int {
-	return len(ms)
-}
-
-func (ms PlayerScoreSorter) Less(i, j int) bool {
-	if ms[i].matched {
-		return true
+	avatar, exists := doc.Find("#space_avatar img").Eq(0).Attr("src")
+	if exists == false {
+		P("not exist")
+		avatar, exists = doc.Find("td.image").Eq(0).Attr("src")
+		if exists == false {
+			P("not exist")
+		}
 	}
 
-	return ms[i].score > ms[j].score
-}
+	P(avatar)
+	s = SpaceInfo{Avatar: avatar, Cardno: ""}
 
-func (ms PlayerScoreSorter) Swap(i, j int) {
-	ms[i], ms[j] = ms[j], ms[i]
+	return s
 }

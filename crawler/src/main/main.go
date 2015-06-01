@@ -7,11 +7,12 @@ import (
 	// "sync"
 	// "os"
 	kq "../kqcrawler"
-	"sort"
+	// "encoding/json"
+	// "os"
+	// "sort"
 )
 
 // var PlayerFinds = make(map[uint16]PlayerScore{})
-var ms1 []kq.PlayerScore
 
 func main() {
 	// url := `http://116.255.247.74/ucenter/data/avatar/000/03/84/98_avatar_big.jpg`
@@ -81,35 +82,59 @@ func main() {
 
 	//*
 
-	//*/
-	kw := "黑杰克"
+	/*
+		kw := "贝壳"
 
+		scores := kq.NewPlayerScores()
+		scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
+		if scores.Count() > 0 {
+			scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)
+		}
+
+		// scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
+		// scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
+
+		kq.P(scores.Count())
+		scores1 := scores.GetScores()
+
+		ms := kq.NewPlayerScoreSorter(scores1)
+		sort.Sort(ms)
+
+		var ms1 []kq.PlayerScore
+
+		if len(ms) > 8 {
+			ms1 = ms[0:9]
+		} else {
+			ms1 = ms
+		}
+		// ms1 := ms[0:9]
+
+		//todo get avatar
+
+		b, err := json.Marshal(ms1)
+		if err != nil {
+			kq.P("error:", err)
+		}
+
+		// kq.P(ms1)
+
+		os.Stdout.Write(b)
+
+		// kq.P(ms1)
+		// for _, item := range ms {
+		//     kq.P(item)
+		// }
+
+		//*/
+
+	//* getspaceinfo
+
+	//11328 6896
 	scores := kq.NewPlayerScores()
-	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PLAYER)
-	if scores.Count() > 0 {
-		scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PLAYER)
-	}
+	var spaceinfo kq.SpaceInfo
+	spaceinfo = scores.GetSpaceInfo(11328)
 
-	scores.ExecFindList(kw, kq.F_VERSION_V1, kq.F_EVENTTYPE_PRO)
-	scores.ExecFindList(kw, kq.F_VERSION_NOW, kq.F_EVENTTYPE_PRO)
-
-	kq.P(scores.Count())
-	scores1 := scores.GetScores()
-
-	ms := kq.NewPlayerScoreSorter(scores1)
-	sort.Sort(ms)
-
-	if len(ms) > 8 {
-		ms1 = ms[0:9]
-	} else {
-		ms1 = ms
-	}
-	// ms1 := ms[0:9]
-
-	//todo get avatar
-	kq.P(ms1)
-	// for _, item := range ms {
-	//     kq.P(item)
-	// }
+	kq.P(spaceinfo)
+	//*/
 
 }
