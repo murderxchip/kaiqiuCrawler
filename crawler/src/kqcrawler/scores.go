@@ -162,7 +162,7 @@ GOQUERYSTART:
 
 		// pfs[spaceid] = pf
 
-		fmt.Printf("%v\n", pf)
+		// fmt.Printf("%v\n", pf)
 
 		// PlayerFinds[]
 	})
