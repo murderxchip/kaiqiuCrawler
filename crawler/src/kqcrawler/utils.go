@@ -1,9 +1,11 @@
 package kqcrawler
 
 import (
-	"net/http"
 	"fmt"
-	)
+	"net/http"
+)
+
+const env = "prod"
 
 func CheckResExists(url string) bool {
 	res, err := http.Head(url)
@@ -31,6 +33,12 @@ func GetRealAvatar(url string) string {
 	return "http://116.255.247.74/ucenter/images/noavatar_big.gif"
 }
 
-func P(v ...interface{}){
-	fmt.Printf("[debug print] %v \n", v)
+func debug(v ...interface{}) {
+	fmt.Printf("[debug]%v \n", v)
+}
+
+func P(v ...interface{}) {
+	if env != "prod" {
+		fmt.Printf("%v \n", v)
+	}
 }
