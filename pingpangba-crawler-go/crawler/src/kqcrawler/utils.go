@@ -33,7 +33,7 @@ func GetRealAvatar(url string) string {
 	return "http://116.255.247.74/ucenter/images/noavatar_big.gif"
 }
 
-func debug(v ...interface{}) {
+func Debug(v ...interface{}) {
 	fmt.Printf("[debug]%v \n", v)
 }
 
