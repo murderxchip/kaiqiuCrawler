@@ -26,7 +26,7 @@ func main() {
 			kw := r.Form["kw"][0]
 			n,_ := strconv.Atoi(r.Form["n"][0])
 
-			kq.Debug(kw, n)
+			// kq.Debug(kw, n)
 
 			crawler := new(kq.Crawler)
 			scores := crawler.FetchUserScores(kw, n)
