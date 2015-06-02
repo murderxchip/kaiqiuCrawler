@@ -14,11 +14,10 @@ import (
 	// "errors"
 )
 
-
 const (
-	URL_SCORES = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
-	URL_SPACE  = "http://kaiqiu.cc/home/%d"
-	URL_HONORS = "http://kaiqiu.cc/home/space.php?do=honor&username=%s"
+	URL_SCORES         = "http://kaiqiu.cc/home/space.php?searchmember=%s&province=&do=score&sex=&version=%s&bg=&score=&eventtype=%s&asso=&age=&searchscorefrom=&searchscoreto="
+	URL_SPACE          = "http://kaiqiu.cc/home/%d"
+	URL_HONORS         = "http://kaiqiu.cc/home/space.php?do=honor&username=%s"
 	URL_DEFAULT_AVATAR = "http://116.255.247.74/ucenter/images/noavatar_big.gif"
 
 	F_EVENTTYPE_PLAYER = "0"   //业余
@@ -31,6 +30,7 @@ type PlayerScore struct {
 	Spaceid      int
 	Mname        string
 	Avatar       string
+	Cardno       string
 	Siteorder    int
 	Sex          string
 	Region       string
@@ -41,16 +41,18 @@ type PlayerScore struct {
 	Score_high   int //历史最高
 	Score_mirror int
 	Mtype        uint8 //0 业余 1 专业
-	Matched      bool  //是否完全匹配比赛用名
+	Honors       []string
+	matched      bool //是否完全匹配比赛用名
 }
 
 type SpaceInfo struct {
-	Avatar string
-	Cardno string
+	Spaceid int
+	Avatar  string
+	Cardno  string
 }
 
 func NewPlayerScore() PlayerScore {
-	return PlayerScore{0, "",URL_DEFAULT_AVATAR, 0, "", "", "", 0, "", 0, 0, 0, 0, false}
+	return PlayerScore{0, "", URL_DEFAULT_AVATAR, "", 0, "", "", "", 0, "", 0, 0, 0, 0, []string{}, false}
 }
 
 // func (p PlayerScore) func getPlayerScore() {
@@ -85,7 +87,7 @@ func (ps *PlayerScores) SetScore(spaceid int, score PlayerScore) {
 	ps.scores[spaceid] = score
 }
 
-func (ps *PlayerScores) ExecFindList(kw string, ver, etype string) {
+func (ps *PlayerScores) ExecFetch(kw string, ver, etype string) (nFind int, bMatched bool) {
 	P("exec find: ", kw, ver, etype)
 	url := fmt.Sprintf(URL_SCORES, url.QueryEscape(kw), ver, etype)
 	P(url)
@@ -105,6 +107,7 @@ GOQUERYSTART:
 	}
 	//*
 	// pfs := PlayerScores{}
+	nFind = doc.Find(".scoretab tr").Length() - 1
 
 	doc.Find(".scoretab tr").Each(func(i int, s *goquery.Selection) {
 
@@ -132,7 +135,8 @@ GOQUERYSTART:
 
 		pf.Mname = strings.TrimSpace(s.Find("td").Eq(2).Text())
 		if pf.Mname == kw {
-			pf.Matched = true
+			pf.matched = true
+			bMatched = true
 		}
 
 		pf.Spaceid = spaceid
@@ -167,6 +171,7 @@ GOQUERYSTART:
 	// fmt.Printf("%v\n", pfs)
 
 	//*/
+	return
 }
 
 func (this *PlayerScores) GetSpaceInfo(spaceid int) (s SpaceInfo) {
@@ -187,7 +192,7 @@ GOQUERYSTART:
 		// log.Fatal("goquery error:" , err)
 	}
 
-	s = SpaceInfo{Avatar: URL_DEFAULT_AVATAR, Cardno: ""}
+	s = SpaceInfo{Spaceid: spaceid, Avatar: URL_DEFAULT_AVATAR, Cardno: ""}
 
 	avatar, exists := doc.Find("#space_avatar img").First().Attr("src")
 	if exists == false {
@@ -206,21 +211,21 @@ GOQUERYSTART:
 }
 
 /**
- $title = pq($row)->find('td:eq(0)')->text();
-            $title_h = pq($row)->find('td:eq(1) img')->attr('title');
+$title = pq($row)->find('td:eq(0)')->text();
+           $title_h = pq($row)->find('td:eq(1) img')->attr('title');
 
-            if($title && $title_h){
-                $honors[] = $title.'['.$title_h.']';
-            }else{
-                break;
-            }
+           if($title && $title_h){
+               $honors[] = $title.'['.$title_h.']';
+           }else{
+               break;
+           }
 
-            */
-func (this *PlayerScores) GetHonors(mname string) (honors []string){
+*/
+func (this *PlayerScores) GetHonors(mname string) (honors []string) {
 	url := fmt.Sprintf(URL_HONORS, url.QueryEscape(mname))
 
-c := 0
-	GOQUERYSTART:
+	c := 0
+GOQUERYSTART:
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		if c < 3 {
@@ -243,10 +248,10 @@ c := 0
 			return
 		}
 
-		P(title, title_h)
+		// P(title, title_h)
 
 		honors = append(honors, fmt.Sprintf("%s[%s]", title, title_h))
 	})
 
-return
+	return
 }

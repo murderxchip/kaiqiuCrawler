@@ -2,14 +2,16 @@ package main
 
 import (
 	// "fmt"
-	// "log"
-	//
+	// "html"
+	"log"
 	// "sync"
 	// "os"
 	kq "../kqcrawler"
 	// "encoding/json"
 	// "os"
 	// "sort"
+	"net/http"
+	// "strconv"
 )
 
 // var PlayerFinds = make(map[uint16]PlayerScore{})
@@ -130,20 +132,43 @@ func main() {
 	//* getspaceinfo
 
 	//11328 6896
-	scores := kq.NewPlayerScores()
+	// scores := kq.NewPlayerScores()
+	// crawler := new(kq.Crawler)
+	// scores := crawler.FetchUserScores("黑杰克", 8)
+	// kq.P(scores)
+	// kq.P(crawler.scores)
+	// kq.P(scores.GetScores())
 	// var spaceinfo kq.SpaceInfo
 	// spaceinfo = scores.GetSpaceInfo(11328)
 
-
 	// fmt.Println(spaceinfo.Avatar)
 
-	scores.GetHonors("创意")
-
+	// honors := scores.GetHonors("创意")
+	// kq.P(honors)
 	//*/
 
 	//*
 
-
 	//*/
 
+	http.HandleFunc("/scores", func(w http.ResponseWriter, r *http.Request) {
+		// fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+		r.ParseForm()
+
+		// fmt.Fprintf(w, "kw", r.Form["kw"])
+		if r.Method == "GET" {
+			// fmt.Println("kw", r.Form["kw"])
+			kw := r.Form["kw"]
+			n := r.Form["n"]
+
+			kq.P(kw, n)
+
+			// crawler := new(kq.Crawler)
+			// scores := crawler.FetchUserScores(kw, n)
+
+			// kq.P(scores)
+		}
+	})
+
+	log.Fatal(http.ListenAndServe(":8081", nil))
 }

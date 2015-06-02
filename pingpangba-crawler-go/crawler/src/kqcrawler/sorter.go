@@ -17,7 +17,7 @@ func (ms PlayerScoreSorter) Len() int {
 }
 
 func (ms PlayerScoreSorter) Less(i, j int) bool {
-	if ms[i].Matched {
+	if ms[i].matched {
 		return true
 	}
 
