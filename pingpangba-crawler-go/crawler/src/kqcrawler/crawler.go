@@ -72,7 +72,7 @@ func (this *Crawler) FetchSpaceInfo() {
 			for i := 0; i < len(this.Scores); i++ {
 				// P()
 				if si.Spaceid == this.Scores[i].Spaceid {
-					this.Scores[i].Avatar = si.Avatar
+					this.Scores[i].Avatar = GetRealAvatar(si.Avatar)
 					break
 				}
 			}
