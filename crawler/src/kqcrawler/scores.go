@@ -196,6 +196,8 @@ GOQUERYSTART:
 			time.Sleep(time.Millisecond * 100)
 			c++
 			goto GOQUERYSTART
+		}else{
+			panic(err)
 		}
 
 		return
@@ -215,7 +217,7 @@ GOQUERYSTART:
 	}
 
 	// P(avatar)
-	s.Avatar = avatar
+	s.Avatar = GetRealAvatar(avatar)
 
 	return s
 }
