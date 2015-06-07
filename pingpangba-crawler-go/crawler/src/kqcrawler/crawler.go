@@ -83,7 +83,7 @@ func (this *Crawler) FetchSpaceInfo() {
 			for i := 0; i < len(this.Scores); i++ {
 				// P()
 				if si.Spaceid == this.Scores[i].Spaceid {
-					this.Scores[i].Avatar = GetRealAvatar(si.Avatar)
+					this.Scores[i].Avatar = si.Avatar
 					break
 				}
 			}
@@ -93,7 +93,7 @@ func (this *Crawler) FetchSpaceInfo() {
 				P("trigger stop")
 				go func() { stop <- 1 }()
 			}
-		case <-time.After(time.Second * 40):
+		case <-time.After(time.Second * 15):
 			return
 		}
 	}
