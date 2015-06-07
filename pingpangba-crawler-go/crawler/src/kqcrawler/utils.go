@@ -38,7 +38,7 @@ func Debug(v ...interface{}) {
 }
 
 func P(v ...interface{}) {
-	if env != "prod" {
+	// if env != "prod" {
 		fmt.Printf("%v \n", v)
-	}
+	// }
 }

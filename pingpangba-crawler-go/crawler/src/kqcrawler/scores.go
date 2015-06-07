@@ -87,8 +87,8 @@ func (ps *PlayerScores) SetScore(spaceid int, score PlayerScore) {
 	ps.scores[spaceid] = score
 }
 
-func (ps *PlayerScores) ExecFetch(kw string, ver, etype string) (nFind int, bMatched bool) {
-	P("exec find: ", kw, ver, etype)
+func (ps *PlayerScores) ExecFetch(kw string, exact int, ver, etype string) (nFind int, bMatched bool) {
+	P("exec find: ", kw, exact, ver, etype)
 	url := fmt.Sprintf(URL_SCORES, url.QueryEscape(kw), ver, etype)
 	P(url)
 	// url := "http://kaiqiu.cc/home/space.php?searchmember=%E7%A7%A6%E6%98%8E&province=&do=score&sex=&version=v1&bg=&score=&eventtype=0&asso=&age=&searchscorefrom=&searchscoreto="
@@ -109,6 +109,8 @@ GOQUERYSTART:
 	// pfs := PlayerScores{}
 	nFind = doc.Find(".scoretab tr").Length() - 1
 
+	findExact := false
+
 	doc.Find(".scoretab tr").Each(func(i int, s *goquery.Selection) {
 
 		if i == 0 {
@@ -122,8 +124,10 @@ GOQUERYSTART:
 		spaceida := reg.FindAllStringSubmatch(mname_raw, -1)
 		spaceid, err := strconv.Atoi(spaceida[0][1])
 
+		mnameFind := strings.TrimSpace(s.Find("td").Eq(2).Text())
+
 		if err != nil {
-			// panic(err)
+			panic(err)
 			return
 		}
 
@@ -133,10 +137,15 @@ GOQUERYSTART:
 			pf = NewPlayerScore()
 		}
 
-		pf.Mname = strings.TrimSpace(s.Find("td").Eq(2).Text())
+		pf.Mname = mnameFind
 		if pf.Mname == kw {
 			pf.matched = true
 			bMatched = true
+		}else{
+			if exact == 1 || findExact {
+				findExact = true
+				return
+			}
 		}
 
 		pf.Spaceid = spaceid
@@ -165,6 +174,7 @@ GOQUERYSTART:
 		// fmt.Printf("%v\n", pf)
 
 		// PlayerFinds[]
+
 	})
 
 	P("find over ", ver, etype)
