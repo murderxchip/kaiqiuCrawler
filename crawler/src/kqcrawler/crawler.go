@@ -13,24 +13,32 @@ func (this *Crawler) FetchUserScores(kw string, limit int) (scores []PlayerScore
 
 	ps := NewPlayerScores()
 
-	n, matched := ps.ExecFetch(kw, F_VERSION_V1, F_EVENTTYPE_PLAYER)
-	if n > 0 {
-		ps.ExecFetch(kw, F_VERSION_NOW, F_EVENTTYPE_PLAYER)
+	var n,m int
+	var matched bool
+	n=0
+	m = 0
+	matched = false
+
+	n, matched = ps.ExecFetch(kw, limit, F_VERSION_V1, F_EVENTTYPE_PLAYER)
+	P(n,m)
+	if n == 1 {
+		ps.ExecFetch(kw, limit, F_VERSION_NOW, F_EVENTTYPE_PLAYER)
 	}
 
-	if !matched {
-		n, matched = ps.ExecFetch(kw, F_VERSION_V1, F_EVENTTYPE_PRO)
-		if n > 0 {
-			ps.ExecFetch(kw, F_VERSION_NOW, F_EVENTTYPE_PRO)
+	if !matched || n == 0 {
+		m, matched = ps.ExecFetch(kw, limit, F_VERSION_V1, F_EVENTTYPE_PRO)
+		// P(m, matched)
+		if m == 1 && n == 0 && matched {
+			ps.ExecFetch(kw, limit, F_VERSION_NOW, F_EVENTTYPE_PRO)
 		}
 	}
 	// var scores1 map[int]PlayerScore
 	scores1 := ps.GetScores()
-
+	// P(scores1)
 	ms := NewPlayerScoreSorter(scores1)
 	sort.Sort(ms)
 
-	// P(ms)
+	P(ms)
 	// P(scores1)
 	// var scores_1 []PlayerScore
 	if len(ms) > limit {
@@ -48,6 +56,9 @@ func (this *Crawler) FetchUserScores(kw string, limit int) (scores []PlayerScore
 }
 
 func (this *Crawler) FetchSpaceInfo() {
+	if len(this.Scores)== 0 {
+		return
+	}
 	// ps := NewPlayerScores()
 	ch := make(chan SpaceInfo, len(this.Scores))
 	stop := make(chan int)
@@ -93,4 +104,5 @@ func (this *Crawler) FetchHonors() {
 		ps := new(PlayerScores)
 		this.Scores[0].Honors = ps.GetHonors(this.Scores[0].Mname)
 	}
+	return
 }
