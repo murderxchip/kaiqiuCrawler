@@ -6,8 +6,8 @@ import (
 	"log"
 	// "sync"
 	// "os"
-	kq "kqcrawler"
 	"encoding/json"
+	kq "kqcrawler"
 	// "os"
 	// "sort"
 	"net/http"
@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	
+
 	http.HandleFunc("/scores", func(w http.ResponseWriter, r *http.Request) {
 		// fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
 		r.ParseForm()
@@ -24,7 +24,7 @@ func main() {
 		if r.Method == "GET" {
 			// fmt.Println("kw", r.Form["kw"])
 			kw := r.Form["kw"][0]
-			n,_ := strconv.Atoi(r.Form["n"][0])
+			n, _ := strconv.Atoi(r.Form["n"][0])
 
 			// kq.Debug(kw, n)
 
@@ -33,7 +33,7 @@ func main() {
 
 			jsonScores, err := json.Marshal(scores)
 			if err != nil {
-			    kq.Debug("error:", err)
+				kq.Debug("error:", err)
 			}
 
 			fmt.Fprintf(w, "%s", jsonScores)
@@ -41,5 +41,8 @@ func main() {
 		}
 	})
 
-	log.Fatal(http.ListenAndServe(":9001", nil))
+	go func() {
+		log.Fatal(http.ListenAndServe(":9001", nil))
+	}()
+
 }
