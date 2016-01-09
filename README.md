@@ -1,4 +1,3 @@
-# kaiqiuCrawler
-开球网用户积分抓取程序（测试版）
+# a real life golang crawler
 
-根据关键字（球友姓名或比赛昵称)抓取网页分析，返回用户数据。
+开球网（kaiqiu.cc）用户积分抓取程序，演示采用golang特性对网站进行抓取，基于goquery页面分析。
